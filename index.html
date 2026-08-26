@@ -7,10 +7,13 @@
 	5. Remove unnecessary comments before creating your template.
 --><html><head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="authoring-tool" content="Adobe_Animate_CC">
     <title>Elite Sniper</title>
     <!-- write your code here -->
     <style>
+        html, body { width:100%; height:100%; overflow:hidden; background:#000; }
         #animation_container,
         #load_img,
         #load_txt {
@@ -21,6 +24,9 @@
             top: 0;
             bottom: 0;
         }
+        #container_background { background-color:#000 !important; }
+        #animation_container { background-color:#000 !important; }
+        canvas { background-color:#000 !important; }
     </style>
     <script src="createjs.js"></script>
     <script src="assets.js"></script>
@@ -94,17 +100,27 @@
                 createjs.Ticker.setFPS(lib.properties.fps);
                 createjs.Ticker.addEventListener("tick", stage);
             }
-            //Code to support hidpi screens and responsive scaling.
+            //Code to support hidpi screens and responsive scaling. FIX mobile rotation + white bars (vs CrazyGames)
             function makeResponsive(isResp, respDim, isScale, scaleType) {
                 var lastW, lastH, lastS = 1;
                 window.addEventListener('resize', resizeCanvas);
+                window.addEventListener('orientationchange', function(){ setTimeout(resizeCanvas, 300); });
+                // toggle landscape prompt on resize like CrazyGames wrapper
+                window.addEventListener('resize', function(){
+                    if(exportRoot && exportRoot.landscape_mc){
+                        // portrait -> show, landscape -> hide (identique CrazyGames orientation: LANDSCAPE)
+                        var isPortrait = window.innerHeight > window.innerWidth;
+                        exportRoot.landscape_mc.visible = isPortrait && window.__IS_MOBILE;
+                    }
+                });
                 resizeCanvas();
 
                 function resizeCanvas() {
                     var w = lib.properties.width,
                         h = lib.properties.height;
-                    var iw = window.innerWidth,
-                        ih = window.innerHeight;
+                    // use visualViewport if available (iOS Safari), fallback to innerWidth/innerHeight, fallback to clientWidth
+                    var iw = (window.visualViewport && window.visualViewport.width) || window.innerWidth || document.documentElement.clientWidth,
+                        ih = (window.visualViewport && window.visualViewport.height) || window.innerHeight || document.documentElement.clientHeight;
                     var pRatio = window.devicePixelRatio || 1,
                         xRatio = iw / w,
                         yRatio = ih / h,
@@ -146,10 +162,10 @@
     <!-- write your code here -->
 <link rel="canonical" href="https://www.crazygames.com/game/elite-sniper"></head>
 
-<body id="body" onload="init();" style="margin:0px;">
-    <div id="container_background" tabindex="0" style="background-color:#ffffff; width:1280px; height:720px"></div>
-    <div id="animation_container" style="background-color:#ffffff; overflow-x:visible; overflow-y:visible">
-        <canvas id="canvas" tabindex="-1" width="1280" height="720" style="position: absolute; display: none; background-color:#ffffff;"></canvas>
+<body id="body" onload="init();" style="margin:0; background:#000; overflow:hidden;">
+    <div id="container_background" tabindex="0" style="background-color:#000; width:100vw; height:100vh"></div>
+    <div id="animation_container" style="background-color:#000; overflow:hidden">
+        <canvas id="canvas" tabindex="-1" width="1280" height="720" style="position: absolute; display: none; background-color:#000;"></canvas>
     </div>
     <div id="load_img" style="width:100px; height:100px;"><img src="loading.png"></div>
     <div id="load_txt" style="font-size:13px; color:#000000;">
